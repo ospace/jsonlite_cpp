@@ -1,0 +1,35 @@
+cmake_minimum_required(VERSION 2.8)
+
+################################################################
+# Build
+
+FILE(GLOB_RECURSE HDRS "*.hpp")
+
+SET(INSTALL_HDRS
+	json_parser.hpp
+	json_stream.hpp
+	jsonlite.hpp
+)
+
+SET(HDRS
+	${INSTALL_HDRS}
+	json_util.hpp
+)
+
+SET(SRCS
+	json_parser.cpp
+	json_stream.cpp
+	jsonlite.cpp
+)
+
+ADD_LIBRARY(${PROJECT_NAME} ${SRCS} ${HDRS})
+
+################################################################
+# Install
+INSTALL(FILES ${INSTALL_HDRS} DESTINATION include)
+INSTALL(TARGETS ${PROJECT_NAME} DESTINATION lib)
+
+################################################################
+# Status
+MESSAGE("[Status]")
+MESSAGE("* Project: ${PROJECT_NAME}")
