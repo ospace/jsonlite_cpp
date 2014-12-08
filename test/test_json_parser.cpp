@@ -2,6 +2,7 @@
 #include "json_stream.hpp"
 #include "json_util.hpp"
 
+
 int test_empty_array() {
 	jslite::JsonStream parser;
 	parser << "[ ]";
@@ -223,9 +224,7 @@ int test_simple_comment() {
 }
 
 int test_json_parser(int argc, char* argv[]) {
-	//LOG("½ÃÀÛ");
 
-#if 1
 	EXPECT_EQ(0, test_empty_array());
 	EXPECT_EQ(0, test_empty_object());
 	EXPECT_EQ(0, test_simple_object());
@@ -236,203 +235,7 @@ int test_json_parser(int argc, char* argv[]) {
 	EXPECT_EQ(0, test_simple_real());
 	EXPECT_EQ(0, test_simple_comment());
 	
-	
 	LOG("ok");
-#else
-	const std::string msg1 =
-		"{"
-		"     \"firstName\": \"John\","
-		"     \"lastName\": \"Smith\","
-		"     \"age\": 25,"
-		"     \"address\":"
-		"     {"
-		"         \"streetAddress\": \"21 2nd Street\","
-		"         \"city\": \"New York\","
-		"         \"state\": \"NY\","
-		"         \"postalCode\": \"10021\""
-		"     },"
-		"     \"phoneNumber\":"
-		"     ["
-		"         {"
-		"           \"type\": \"home\","
-		"           \"number\": \"212 555-1234\""
-		"         },"
-		"         {"
-		"           \"type\": \"fax\","
-		"           \"number\": \"646 555-4567\""
-		"         }"
-		"     ]"
-		" }";
 
-	if (0 != test_json_parser(msg1)) return 1;
-
-	const std::string msg2 = "["
-		"{"
-		"\"FirstName1\":\"Anoushka\","
-		"\"Last_Name\":\"Nycil\","
-		"\"Age\":3"
-		"},"
-		"{"
-		"\"FirstName\":\"Len\","
-		"\"LastName\":\"bistro\""
-		"},"
-		"{"
-		"\"Length\":55,"
-		"\"breath\":25.28,"
-		"\"Area\":22e+2"
-		"},"
-		"{"
-		"\"firstname1\":\"Robert\","
-		"\"firstname2\":\"Solomon\","
-		"\"firstname3\":\"Jane\","
-		"\"firstname4\":\"Veronica\","
-		"\"firstname5\":\"Christopher\""
-		"},"
-		"{"
-		"\"Name\":\"Isabelle\","
-		"\"ID\": 43231,"
-		"\"Enrolled\":true,"
-		"\"classes\":null"
-		"},"
-		"{"
-		"\"FirstName\":\"Dolly\","
-		"\"LastName\":\"Nycil\","
-		"\"Class\":\"History\""
-		"},"
-		"{"
-		"\"Student\": { \"Name\":\"isabelle\","
-		"                \"ID\":43231,"
-		"                \"Enrolled\":{\"History\":true,"
-		"                               \"Science\":false"
-		"                              }"
-		"             }"
-		"},"
-		"{"
-		"\"Students\":[{\"Name\":\"Isabelle\",\"ID\":43231,\"Enrolled\":true},"
-		"              {\"Name\":\"Tonya\",\"ID\":43232,\"Enrolled\":true},"
-		"              {\"Name\":\"Vivian\",\"ID\":43233,\"Enrolled\":true}]"
-		"}]";
-
-	if (0 != test_json_parser(msg2)) return 1;
-
-	const std::string msg3 =
-		"{"
-		"    \"glossary\": {"
-		"        \"title\": \"example glossary\","
-		"		\"GlossDiv\": {"
-		"            \"title\": \"S\","
-		"			\"GlossList\": {"
-		"                \"GlossEntry\": {"
-		"                    \"ID\": \"SGML\","
-		"					\"SortAs\": \"SGML\","
-		"					\"GlossTerm\": \"Standard Generalized Markup Language\","
-		"					\"Acronym\": \"SGML\","
-		"					\"Abbrev\": \"ISO 8879:1986\","
-		"					\"GlossDef\": {"
-		"                        \"para\": \"A meta-markup language, used to create markup languages such as DocBook.\","
-		"						\"GlossSeeAlso\": [\"GML\", \"XML\"]"
-		"                    },"
-		"					\"GlossSee\": \"markup\""
-		"                }"
-		"            }"
-		"        }"
-		"    }"
-		"}";
-
-	if (0 != test_json_parser(msg3)) return 1;
-	const std::string msg4 =
-		"{\"widget\": {"
-		"    \"debug\": \"on\","
-		"    \"window\": {"
-		"        \"title\": \"Sample Konfabulator Widget\","
-		"        \"name\": \"main_window\","
-		"        \"width\": 500,"
-		"        \"height\": 500"
-		"    },"
-		"    \"image\": { "
-		"        \"src\": \"Images/Sun.png\","
-		"        \"name\": \"sun1\","
-		"        \"hOffset\": 250,"
-		"        \"vOffset\": 250,"
-		"        \"alignment\": \"center\""
-		"    },"
-		"    \"text\": {"
-		"        \"data\": \"Click Here\","
-		"        \"size\": 36,"
-		"        \"style\": \"bold\","
-		"        \"name\": \"text1\","
-		"        \"hOffset\": 250,"
-		"        \"vOffset\": 100,"
-		"        \"alignment\": \"center\","
-		"        \"onMouseUp\": \"sun1.opacity = (sun1.opacity / 100) * 90;\""
-		"    }"
-		"}}  ";
-
-	if (0 != test_json_parser(msg4)) return 1;
-
-	const std::string msg5 =
-		"{\"menu\": {"
-		"    \"header\": \"SVG Viewer\","
-		"    \"items\": ["
-		"        {\"id\": \"Open\"},"
-		"        {\"id\": \"OpenNew\", \"label\": \"Open New\"},"
-		"        null,"
-		"        {\"id\": \"ZoomIn\", \"label\": \"Zoom In\"},"
-		"        {\"id\": \"ZoomOut\", \"label\": \"Zoom Out\"},"
-		"        {\"id\": \"OriginalView\", \"label\": \"Original View\"},"
-		"        null,"
-		"        {\"id\": \"Quality\"},"
-		"        {\"id\": \"Pause\"},"
-		"        {\"id\": \"Mute\"},"
-		"        null,"
-		"        {\"id\": \"Find\", \"label\": \"Find...\"},"
-		"        {\"id\": \"FindAgain\", \"label\": \"Find Again\"},"
-		"        {\"id\": \"Copy\"},"
-		"        {\"id\": \"CopyAgain\", \"label\": \"Copy Again\"},"
-		"        {\"id\": \"CopySVG\", \"label\": \"Copy SVG\"},"
-		"        {\"id\": \"ViewSVG\", \"label\": \"View SVG\"},"
-		"        {\"id\": \"ViewSource\", \"label\": \"View Source\"},"
-		"        {\"id\": \"SaveAs\", \"label\": \"Save As\"},"
-		"        null,"
-		"        {\"id\": \"Help\"},"
-		"        {\"id\": \"About\", \"label\": \"About Adobe CVG Viewer...\"}"
-		"    ]"
-		"}}";
-	if (0 != test_json_parser(msg5)) return 1;
-
-	const std::string msg6 =
-		"{"
-		"     \"firstName\": \"John\","
-		"     \"lastName\": \"Smith\","
-		"     \"age\": 25,"
-		"     \"address\":"
-		"     {"
-		"         \"streetAddress\": \"21 2nd Street\","
-		"         \"city\": \"New York\","
-		"         \"state\": \"NY\","
-		"         \"postalCode\": \"10021\""
-		"     },"
-		"     \"phoneNumber\":"
-		"     ["
-		"         {"
-		"           \"type\": \"home\","
-		"           \"number\": \"212 555-1234\""
-		"         },"
-		"         {"
-		"           \"type\": \"fax\","
-		"           \"number\": \"646 555-4567\""
-		"         }"
-		"     ]"
-		" }";
-
-	if (0 != test_json_parser(msg6)) return 1;
-
-	const std::string msg7 =
-		"{"
-		"  \"name=\":\"\\\"ospace\\\"\""
-		"}";
-
-	if (0 != test_json_parser(msg7)) return 1;
-#endif
 	return 0;
 }
