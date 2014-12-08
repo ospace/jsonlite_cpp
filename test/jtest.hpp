@@ -30,18 +30,18 @@ std::string CurrTime() {
 
 template <typename L, typename R>
 bool expect(L l, R r, const char *l_str, const char *r_str, size_t line, const char* func) {
-	std::stringstream ss;
+	std::ostringstream oss;
 	bool ret = false;
 
-	ss << CurrTime() << " " << func << "(" << line << "): ";
+	oss << CurrTime() << " " << func << "(" << line << "): ";
 	if (l == r) {
-		ss << "\"" << l_str << " == " << r_str << "\" is pass";
+		oss << "\"" << l_str << " == " << r_str << "\" is pass";
 		ret = true;
 	} else {
-		ss << "\"" << r_str << "\" expected value is " << l_str << ", but is "<< r;
+		oss << "\"" << r_str << "\" expected value is " << l_str << ", but is "<< r;
 	}
 
-	std::cout << ss.str() << std::endl;
+	std::cout << oss.str() << std::endl;
 
 	return ret;
 }

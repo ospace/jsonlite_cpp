@@ -220,17 +220,17 @@ size_t Json::size() const {
 size_t Json::length() const { return size(); } //similar to javascript
     
 //for debuging
-std::string Json::ToString() const {
-    std::stringstream ss;
-    ss << "{ \"value\":\"" << value_ << "\"";
-	ss << ", \"typeid\":\"";
+std::string Json::str() const {
+    std::ostringstream oss;
+    oss << "{ \"value\":\"" << value_ << "\"";
+	oss << ", \"typeid\":\"";
     if (value_) {
-        ss << value_->type().name();
+        oss << value_->type().name();
     }  else {
-        ss << typeid(value_).name();
+        oss << typeid(value_).name();
     }
-	ss << "\" }";
-    return ss.str();
+	oss << "\" }";
+    return oss.str();
 }
 
 } // namespace jslite

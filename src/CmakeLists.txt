@@ -3,10 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 ################################################################
 # Build
 
-FILE(GLOB_RECURSE HDRS "*.hpp")
-
 SET(INSTALL_HDRS
-	json_parser.hpp
 	json_stream.hpp
 	jsonlite.hpp
 )
@@ -14,10 +11,10 @@ SET(INSTALL_HDRS
 SET(HDRS
 	${INSTALL_HDRS}
 	json_util.hpp
+	json_tokenizer.hpp
 )
 
 SET(SRCS
-	json_parser.cpp
 	json_stream.cpp
 	jsonlite.cpp
 )

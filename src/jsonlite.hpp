@@ -25,7 +25,7 @@
 #define __JSON_LITE_HPP_20121127__
 
 #include <stdint.h>
-#include <sstream>
+#include <ostream>
 #include <typeinfo>
 #include <algorithm>
 #include <stdexcept>
@@ -39,7 +39,6 @@
 #endif
 
 namespace jslite {
-
 
 class Json {
 public:
@@ -131,7 +130,7 @@ public:
     }
 
     //for debuging
-    std::string ToString() const;
+    std::string str() const;
 
 protected:
 	struct Dummy {
@@ -153,9 +152,9 @@ protected:
     Any<V>* any_cast() const {
 		if (NULL == value_) throw std::logic_error("null object");
         if (typeid(V) == value_->type()) return static_cast<Any<V>*>(value_);
-		std::stringstream ss;
-		ss << "type mismatch: expected " << typeid(V).name() << ", but " << value_->type().name();
-        throw std::logic_error(ss.str());
+		std::ostringstream oss;
+		oss << "type mismatch: expected " << typeid(V).name() << ", but " << value_->type().name();
+        throw std::logic_error(oss.str());
     }
 
 private:

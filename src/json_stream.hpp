@@ -3,15 +3,18 @@
 
 #include <string>
 #include "jsonlite.hpp"
+#include <sstream>
 
 namespace jslite {
+
+class JsonTokenzier;
 
 class JsonStream {
 public:
 	JsonStream();
 	~JsonStream();
-	
-	int Print(std::ostream* os, const Json& json);
+
+	//in operation
 	int Print(const Json& json);
 
 	void set_obj_sep(const std::string& sep);
@@ -19,22 +22,37 @@ public:
 	void set_indent_sep(const std::string& sep);
 	void set_comma_sep(const std::string& sep);
 	void set_colon_sep(const std::string& sep);
-	
+
+	//out operating
+	int Parse(Json& json);
+
+	//others
 	std::string str() const;
+	void str(const std::string& s);
+	JsonStream& operator << (const std::string& s);
+	JsonStream& operator << (const char *s);
 
 protected:
-	void PrintValue(std::ostream* os, const Json& json);
-	void PrintObject(std::ostream* os, const Json& json);
-	void PrintArray(std::ostream* os, const Json& json);
-	void PrintString(std::ostream* os, const Json& json);
+	//in operation
+	int32_t PrintValue(const Json& json);
+	int32_t PrintObject(const Json& json);
+	int32_t PrintArray(const Json& json);
+	int32_t PrintString(const Json& json);
 
-	void FormattingBegin(std::ostream* os, const std::string& sep);
-	void FormattingIndent(std::ostream* os);
-	void FormattingComma(std::ostream* os);
-	void FormattingEnd(std::ostream* os, const std::string& sep);
+	void FormattingBegin(const std::string& sep);
+	void FormattingIndent();
+	void FormattingComma();
+	void FormattingEnd(const std::string& sep);
+
+	//out operating
+	int32_t ParseValue(Json &json, size_t depth = 0);
+	int32_t ParseArray(Json &json, size_t depth);
+	int32_t ParseObject(Json &json, size_t depth);
+	void TrimSpace();
 
 private:
-	std::ostringstream oss_;
+	JsonTokenzier *tokenizer_;
+	std::stringstream ss_;
 
 	std::string obj_sep_;
 	std::string array_sep_;
@@ -51,22 +69,20 @@ struct JOpt {
 };
 
 JOpt obj_sep(const std::string& val);
-
 JOpt array_sep(const std::string& val);
-
 JOpt indent_sep(const std::string& val);
-
 JOpt comma_sep(const std::string& val);
+JsonStream& default_sep(JsonStream& jstm);
 
-JsonStream& default_sep(JsonStream& printer);
 
-std::ostream& operator << (std::ostream& os, const Json& value);
+//////////////////////////////////////////////////////////////
+// addtional operators
+JsonStream& operator << (JsonStream& jstm, const Json& json);
+JsonStream& operator << (JsonStream& jstm, JsonStream& (__cdecl *func)(JsonStream&));
+JsonStream& operator << (JsonStream& jstm, const JOpt& opt);
+JsonStream& operator >> (JsonStream& jstm, Json& json);
 
-JsonStream& operator << (JsonStream& printer, const Json& json);
-
-JsonStream& operator << (JsonStream& printer, JsonStream& (__cdecl *func)(JsonStream&));
-
-JsonStream& operator << (JsonStream& printer, const JOpt& opt);
+std::ostream& operator << (std::ostream& os, const Json& json);
 
 } //namespace jslite
 

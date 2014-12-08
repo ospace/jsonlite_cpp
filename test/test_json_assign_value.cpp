@@ -1,7 +1,7 @@
 #include "jtest.hpp"
 #include "jsonlite.hpp"
 #include "json_stream.hpp"
-#include "json_parser.hpp"
+//#include "json_parser.hpp"
 
 
 using jslite::Json;
@@ -35,7 +35,7 @@ int test_json_assign_value(int argc, char* argv[]) {
 
 		v[3] = 0.00001;
 		EXPECT_EQ(true, v[3].IsReal());
-		EXPECT_EQ(0.00001, v[3].integer());
+		EXPECT_EQ(0.00001, v[3].real());
 
 		v[4]["k3"] = "def";
 		EXPECT_EQ("def", v[4]["k3"].string());
@@ -51,17 +51,24 @@ int test_json_assign_value(int argc, char* argv[]) {
 		EXPECT_EQ((size_t)5, json.size());
 		EXPECT_EQ(v[0], json[0]);
 
-		LOG(json);
+		jslite::JsonStream jstm;
+
+		jstm << json;
+		LOG(jstm.str());
 
 		json[0].remove_by("k1");
 		EXPECT_EQ((size_t)5, json.size());
 
-		LOG(json);
+		jstm.str("");
+		jstm << json;
+		LOG(jstm.str());
 
 		json.remove_at(0);
 		EXPECT_EQ((size_t)4, json.size());
 
-		LOG(json);
+		jstm.str("");
+		jstm << json;
+		LOG(jstm.str());
 
 	} catch (std::range_error &e) {
 		LOG("range_error: " << e.what());
