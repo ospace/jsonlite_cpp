@@ -1,11 +1,10 @@
 #jsonlite_cpp
-============
 
 Simple lite json stream for c++
 
 
 ##Simple example
-============
+
 
 ```cpp
 //input a string
