@@ -15,7 +15,7 @@ jstm << "{ \"key\":100 }";
 jsonlite::Json json;
 jstm >> json;
 
-std::cout << json["key"].integer() << std::endl;
+std::cout << "key: " << json["key"].integer() << std::endl;
 
 //printer
 jstm.str(""); //clear internal buffer
