@@ -7,6 +7,9 @@ Simple lite json stream for c++
 
 
 ```cpp
+//header file
+#include <json_stream.h>
+
 //input a string
 jsonlite::JsonStream jstm;
 jstm << "{ \"key\":100 }";
