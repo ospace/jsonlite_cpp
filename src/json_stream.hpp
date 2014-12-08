@@ -2,8 +2,9 @@
 #define __JS_JSON_STREAM_HPP_20140928__
 
 #include <string>
-#include "jsonlite.hpp"
 #include <sstream>
+
+#include "jsonlite.hpp"
 
 namespace jslite {
 
