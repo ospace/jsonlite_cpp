@@ -42,38 +42,38 @@ namespace jslite {
 
 class Json {
 public:
-	typedef Json                        Value;
-	typedef std::string                 String;
-	typedef std::wstring                WString;  // UCS2
-	typedef int64_t                     Integer;
-	typedef uint64_t                    UInteger;
-	typedef double                      Real;
-	typedef bool                        Boolean;
-	typedef std::map<std::string, Json> Object;
-	typedef std::deque<Json>            Array;
+    typedef Json                        Value;
+    typedef std::string                 String;
+    typedef std::wstring                WString;  // UCS2
+    typedef int64_t                     Integer;
+    typedef uint64_t                    UInteger;
+    typedef double                      Real;
+    typedef bool                        Boolean;
+    typedef std::map<std::string, Json> Object;
+    typedef std::deque<Json>            Array;
 
     Json();
-	Json(const Json& val);
+    Json(const Json& val);
     Json(const char* val);
     Json(const String& val);
     Json(Boolean val);
-	Json(UInteger val);
-	Json(Real val);
-	Json(Integer val);
+    Json(UInteger val);
+    Json(Real val);
+    Json(Integer val);
 
     ~Json();
 
-	Json& Swap(Json& other);
+    Json& Swap(Json& other);
 
     bool IsNull() const;
     bool IsString() const;
     bool IsObject() const;
     bool IsArray() const;
     bool IsBoolean() const;
-	bool IsInteger() const;
-	bool IsUInteger() const;
-	bool IsReal() const;
-	bool IsNumber() const;
+    bool IsInteger() const;
+    bool IsUInteger() const;
+    bool IsReal() const;
+    bool IsNumber() const;
 
     void remove();
     void clear();
@@ -81,33 +81,33 @@ public:
     void remove_by(const String& key);
 
     const String& string() const;
-	WString wstring() const;
+    WString wstring() const;
 
 #ifdef WIN32
-	String multibyte() const;
-	//Json& from_multibyte(const String& str);
+    String multibyte() const;
+    //Json& from_multibyte(const String& str);
 #endif
 
     Boolean boolean() const; 
-	Array& array() const;
-	Array& array();
-	Object& object() const;
-	Object& object();
-	Integer integer() const;
-	UInteger uinteger() const;
-	Real real() const;
+    Array& array() const;
+    Array& array();
+    Object& object() const;
+    Object& object();
+    Integer integer() const;
+    UInteger uinteger() const;
+    Real real() const;
 
-	Json& operator = (const Json& val);
+    Json& operator = (const Json& val);
     Json& operator = (const String& val);
-	Json& operator = (const WString& val);
+    Json& operator = (const WString& val);
     Json& operator = (const char* val);
     Json& operator = (Boolean val);
-	Json& operator = (Integer val);
-	Json& operator = (UInteger val);
-	Json& operator = (Real val);
-	Json& operator = (int val);
+    Json& operator = (Integer val);
+    Json& operator = (UInteger val);
+    Json& operator = (Real val);
+    Json& operator = (int val);
 
-	bool operator == (const Json& other) const;
+    bool operator == (const Json& other) const;
     Json& operator [] (const std::string& key);
     Json& operator [] (const std::string& key) const;
     Json& operator [] (unsigned short idx);
@@ -119,7 +119,7 @@ public:
     template <class Function>
     Function for_keys(Function f) const {
         const Object &obj = object();
-		for(Object::const_iterator it=obj.begin(); it!=obj.end(); ++it) f(it->first, it->second);
+        for(Object::const_iterator it=obj.begin(); it!=obj.end(); ++it) f(it->first, it->second);
         return f;
     }
 
@@ -133,10 +133,10 @@ public:
     std::string str() const;
 
 protected:
-	struct Dummy {
+    struct Dummy {
         virtual ~Dummy() {}
         virtual const std::type_info& type() const = 0;
-		virtual Dummy* clone() const = 0;
+        virtual Dummy* clone() const = 0;
     };
 
     template <typename V>
@@ -144,16 +144,16 @@ protected:
         Any(const V& v) : v_(v) {}
         Any() {}
         const std::type_info& type() const { return typeid(V); }
-		Dummy* clone() const { return new Any<V>(v_); }
+        Dummy* clone() const { return new Any<V>(v_); }
         V    v_;
     };
 
     template <typename V>
     Any<V>* any_cast() const {
-		if (NULL == value_) throw std::logic_error("null object");
+        if (NULL == value_) throw std::logic_error("null object");
         if (typeid(V) == value_->type()) return static_cast<Any<V>*>(value_);
-		std::ostringstream oss;
-		oss << "type mismatch: expected " << typeid(V).name() << ", but " << value_->type().name();
+        std::ostringstream oss;
+        oss << "type mismatch: expected " << typeid(V).name() << ", but " << value_->type().name();
         throw std::logic_error(oss.str());
     }
 

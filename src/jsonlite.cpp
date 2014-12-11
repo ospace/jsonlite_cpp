@@ -41,8 +41,8 @@ bool Json::IsUInteger() const { return value_ && (typeid(UInteger) == value_->ty
 bool Json::IsReal() const { return value_ && (typeid(Real) == value_->type()); }
 
 bool Json::IsNumber() const {
-	if (IsInteger() || IsUInteger() || IsReal()) return true;
-	return false;
+    if (IsInteger() || IsUInteger() || IsReal()) return true;
+    return false;
 }
 
 void Json::remove() { clear(); }
@@ -65,7 +65,7 @@ void Json::remove_at(size_t idx) {
 void Json::remove_by(const String& key) {
     if (!IsObject()) return;
     Object &obj = any_cast<Object>()->v_;
-	obj.erase(key);
+    obj.erase(key);
 }
 
 const Json::String& Json::string() const { return any_cast<Json::String>()->v_; }
@@ -83,15 +83,15 @@ Json::Boolean Json::boolean() const { return any_cast<Boolean>()->v_; }
 Json::Array& Json::array() const { return any_cast<Array>()->v_; }
 
 Json::Array& Json::array() {
-	if (IsNull()) value_ = new Any<Array>();
-	return any_cast<Array>()->v_;
+    if (IsNull()) value_ = new Any<Array>();
+    return any_cast<Array>()->v_;
 }
 
 Json::Object& Json::object() const { return any_cast<Object>()->v_; }
 
 Json::Object& Json::object() {
-	if (IsNull()) value_ = new Any<Object>();
-	return any_cast<Object>()->v_;
+    if (IsNull()) value_ = new Any<Object>();
+    return any_cast<Object>()->v_;
 }
 
 Json::Integer Json::integer() const { return any_cast<Integer>()->v_; }
@@ -101,85 +101,85 @@ Json::UInteger Json::uinteger() const { return any_cast<UInteger>()->v_; }
 Json::Real Json::real() const { return any_cast<Real>()->v_; }
 
 Json& Json::operator = (const Json& val) {
-	Json(val).Swap(*this);
-	return *this;
+    Json(val).Swap(*this);
+    return *this;
 }
 
 Json& Json::operator = (const String& val) {
-	//if (!unicodelite::ValidUTF8(val)) return *this; //TODO exception
+    //if (!unicodelite::ValidUTF8(val)) return *this; //TODO exception
 
     if (IsNull()) {
-		Json(val).Swap(*this);
-	} else {
-		any_cast<String>()->v_ = val;
-	}
+        Json(val).Swap(*this);
+    } else {
+        any_cast<String>()->v_ = val;
+    }
     return *this;
 }
 
 Json& Json::operator = (const WString& val) {
-	std::string target;
+    std::string target;
 
-	for(size_t i = 0; i < val.size(); ++i) {
-		target += UnicodeToUTF8(val[i]);
-	}
+    for(size_t i = 0; i < val.size(); ++i) {
+        target += UnicodeToUTF8(val[i]);
+    }
 
-	return operator = (target);
+    return operator = (target);
 }
 
 Json& Json::operator = (const char* val) { return operator = (String(val)); }
 
 Json& Json::operator = (Json::Boolean val) {
-	if (IsNull()) {
-		Json(val).Swap(*this);
-	} else {
-		any_cast<Boolean>()->v_ = val;
-	}
+    if (IsNull()) {
+        Json(val).Swap(*this);
+    } else {
+        any_cast<Boolean>()->v_ = val;
+    }
     return *this;
 }
 
 Json& Json::operator = (Integer val) {
-	if (IsNull()) {
-		Json(val).Swap(*this);
-	} else {
-		any_cast<Integer>()->v_ = val;
-	}
+    if (IsNull()) {
+        Json(val).Swap(*this);
+    } else {
+        any_cast<Integer>()->v_ = val;
+    }
     return *this;
 }
 
 Json& Json::operator = (UInteger val) {
-	if (IsNull()) {
-		Json(val).Swap(*this);
-	} else {
-		any_cast<UInteger>()->v_ = val;
-	}
+    if (IsNull()) {
+        Json(val).Swap(*this);
+    } else {
+        any_cast<UInteger>()->v_ = val;
+    }
     return *this;
 }
 
 Json& Json::operator = (Real val) {
-	if (IsNull()) {
-		Json(val).Swap(*this);
-	} else {
-		any_cast<Real>()->v_ = val;
-	}
+    if (IsNull()) {
+        Json(val).Swap(*this);
+    } else {
+        any_cast<Real>()->v_ = val;
+    }
     return *this;
 }
 
 Json& Json::operator = (int val) {
-	return operator = ((Integer) val);
+    return operator = ((Integer) val);
 }
 
 bool Json::operator == (const Json& other) const {
-	if (this == &other) return true;
-	if (IsNull()) return other.IsNull();
-	if (other.IsNull()) return false;
-	if (value_->type() != other.value_->type()) return false;
-	if (IsInteger()) return integer() == other.integer();
-	if (IsUInteger()) return uinteger() == other.uinteger();
-	if (IsReal()) return real() == other.real();
-	if (IsString()) return string() == other.string();
-	if (IsArray())  return array() == other.array();
-	if (IsObject()) return object() == other.object();
-	return false;
+    if (this == &other) return true;
+    if (IsNull()) return other.IsNull();
+    if (other.IsNull()) return false;
+    if (value_->type() != other.value_->type()) return false;
+    if (IsInteger()) return integer() == other.integer();
+    if (IsUInteger()) return uinteger() == other.uinteger();
+    if (IsReal()) return real() == other.real();
+    if (IsString()) return string() == other.string();
+    if (IsArray())  return array() == other.array();
+    if (IsObject()) return object() == other.object();
+    return false;
 }
 
 Json& Json::operator [] (const std::string& key) {
@@ -192,20 +192,20 @@ Json& Json::operator [] (const std::string& key) const {
 }
 
 Json& Json::operator [] (unsigned short idx) {
-	Array &arr = array();
+    Array &arr = array();
     if (idx >= arr.size()) throw std::range_error("out of range array");
     return arr[idx];
 }
 
 Json& Json::operator [] (unsigned short idx) const {
-	Array &arr = array();
+    Array &arr = array();
     if (idx >= arr.size()) throw std::range_error("out of range array");
     return arr[idx];
 }
 
 Json& Json::put(const Json& val) {
-	if (IsNull()) value_ = new Any<Array>();
-	array().push_back(val);
+    if (IsNull()) value_ = new Any<Array>();
+    array().push_back(val);
     return *this;
 }
 
@@ -213,7 +213,7 @@ size_t Json::size() const {
     if (IsNull()) return 0;
     if (IsObject()) return object().size();
     if (IsArray()) return array().size();
-	if (IsString()) return string().size();
+    if (IsString()) return string().size();
     return 1;
 }
 
@@ -223,13 +223,13 @@ size_t Json::length() const { return size(); } //similar to javascript
 std::string Json::str() const {
     std::ostringstream oss;
     oss << "{ \"value\":\"" << value_ << "\"";
-	oss << ", \"typeid\":\"";
+    oss << ", \"typeid\":\"";
     if (value_) {
         oss << value_->type().name();
     }  else {
         oss << typeid(value_).name();
     }
-	oss << "\" }";
+    oss << "\" }";
     return oss.str();
 }
 
