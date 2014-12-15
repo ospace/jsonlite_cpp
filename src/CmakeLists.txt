@@ -17,6 +17,7 @@ SET(HDRS
 SET(SRCS
 	json_stream.cpp
 	jsonlite.cpp
+	json_tokenizer.cpp
 )
 
 ADD_LIBRARY(${PROJECT_NAME} ${SRCS} ${HDRS})
