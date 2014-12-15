@@ -8,6 +8,24 @@
 
 namespace jslite {
 
+typedef enum {
+	SUCCESS = 0,
+	ERR_NO_MEMORY, //error
+	ERR_QUOTES, //double quotes are needed for string
+	ERR_ESC_CHAR, // unknown a escape character of string
+	ERR_UNICODE_CHAR, // wrong unicode string
+	ERR_UNICODE_LEN, // too short a unicode string
+	ERR_JSON_TYPE, // not supported a type of json data
+	ERR_UTF8, // wrong utf8 string
+	ERR_VALUE, // invalid json value
+	ERR_OVERFLOW, // overflow a depth of json data
+	ERR_ARRAY_END, // a end of array("]") is required
+	ERR_OBJECT_KEY, // a type of key at object is required a string
+	ERR_OBJECT_SEP, // colon for seperation of oject is requried
+	ERR_OBJECT_END, // a end of object("}") is required
+	ERR_NUMBER, // wrong number string
+} ErrnoNo;
+
 class JsonTokenzier;
 
 class JsonStream {
@@ -16,7 +34,7 @@ public:
     ~JsonStream();
 
     //in operation
-    int Print(const Json& json);
+    int32_t Print(const Json& json);
 
     void set_obj_sep(const std::string& sep);
     void set_array_sep(const std::string& sep);
@@ -25,13 +43,15 @@ public:
     void set_colon_sep(const std::string& sep);
 
     //out operating
-    int Parse(Json& json);
+    int32_t Parse(Json& json);
 
     //others
     std::string str() const;
     void str(const std::string& s);
     JsonStream& operator << (const std::string& s);
     JsonStream& operator << (const char *s);
+
+	std::string strerror(int32_t err);
 
 protected:
     //in operation

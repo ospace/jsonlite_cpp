@@ -7,12 +7,41 @@ namespace jslite {
 
 const size_t MAX_STACK_DEPTH = 100000;
 
-int ParseString(const JsonTokenzier::Token& token, std::string& str) {
+static const char* jslite_strerror(int32_t err) {
+	static const struct {
+		int32_t err;
+		const char *str;
+	} str_errors[] = {
+		{SUCCESS, "Success"},
+		{ERR_QUOTES, "Double quotes are needed for string"},
+		{ERR_ESC_CHAR, "Invalid a escape character of string"},
+		{ERR_UNICODE_CHAR, "Invalid unicode string"},
+		{ERR_UNICODE_LEN, "Less unicode string"},
+		{ERR_JSON_TYPE, "Not supported a json type"},
+		{ERR_UTF8, "Invalid utf8 string"},
+		{ERR_VALUE, "Invalid json value"},
+		{ERR_OVERFLOW, "Overflow a depth of json data"},
+		{ERR_ARRAY_END, "End of array(\"]\") is required"},
+		{ERR_OBJECT_KEY, "Need a string to an object key"},
+		{ERR_OBJECT_SEP, "colon seperator is requried to object"},
+		{ERR_OBJECT_END, "End of object (\"}\") is required"},
+		{ERR_NUMBER, "Invalid number string"},
+		{0, NULL}
+	};
+
+	for (int32_t i=0; str_errors[i].str; ++i) {
+		if (str_errors[i].err == err) return str_errors[i].str;
+	}
+
+	return "Unknown error";
+}
+
+int32_t ParseString(const JsonTokenzier::Token& token, std::string& str) {
     str.clear();
 
     const char *it = token.begin;
 
-    if ('"' != *it) return -1;
+    if ('"' != *it) return ERR_QUOTES;
 
     str.reserve(token.end - token.begin + 2);
     ++it;
@@ -27,33 +56,33 @@ int ParseString(const JsonTokenzier::Token& token, std::string& str) {
             case 't': str += '\t'; break;
             case 'u': //u: 2chars(json only), U:4chars
                 ++it;
-                if (std::distance(it, token.end) < 4) return -2;
-                if (!(isxdigit(*it) && isxdigit(*(it+1)) && isxdigit(*(it+2)) && isxdigit(*(it+3)))) return -3;
+                if (std::distance(it, token.end) < 4) return ERR_UNICODE_LEN;
+                if (!(isxdigit(*it) && isxdigit(*(it+1)) && isxdigit(*(it+2)) && isxdigit(*(it+3)))) return ERR_UNICODE_CHAR;
                 str += UnicodeToUTF8(asc2hex(*it, *(it+1)), asc2hex(*(it+2), *(it+3)));
                 it += 3;
                 break;
-            default: return -4;
+            default: return ERR_ESC_CHAR;
             }
         } else {
             str += *it;
         }
     }
 
-    if ('"' != *it) return -5;
+    if ('"' != *it) return ERR_QUOTES;
 
     return 0;
 }
 
-int ParseString(Json &json, const JsonTokenzier::Token& token) {
+int32_t ParseString(Json &json, const JsonTokenzier::Token& token) {
     std::string str;
 
     int32_t ret = ParseString(token, str);
-    if (0 > ret) return ret;
+    if (0 != ret) return ret;
     json = str;
     return 0;
 }
 
-int ParseDouble(Json &json, const JsonTokenzier::Token& token) {
+int32_t ParseDouble(Json &json, const JsonTokenzier::Token& token) {
     ptrdiff_t len = token.end - token.begin;
 
     jslite::Json::Real num = 0.0;
@@ -64,14 +93,14 @@ int ParseDouble(Json &json, const JsonTokenzier::Token& token) {
         memcpy(buf, token.begin, len);
         buf[len] = '\0';
         num = strtod(buf, &pt);
-        if (pt != (buf + len)) return -1;        
+        if (pt != (buf + len)) return ERR_NUMBER;
     } else {
         char *buf = (char*)malloc(len+1);
         memcpy(buf, token.begin, len);
         buf[len] = '\0';
         num = strtod(buf, &pt);
         free(buf);
-        if (pt != (buf + len)) return -1;        
+        if (pt != (buf + len)) return ERR_NUMBER;
     }
 
     json = num;
@@ -79,7 +108,7 @@ int ParseDouble(Json &json, const JsonTokenzier::Token& token) {
     return 0;
 }
 
-int ParseInteger(Json &json, const JsonTokenzier::Token& token) {
+int32_t ParseInteger(Json &json, const JsonTokenzier::Token& token) {
 
     if (token.begin == token.end) {
         json = 0;
@@ -94,7 +123,7 @@ int ParseInteger(Json &json, const JsonTokenzier::Token& token) {
     if (10 > len) {
         memcpy(str, token.begin, len);
         int32_t val = strtol(str, &pt, 10);
-        if (str+len != pt) return 1;
+        if (str+len != pt) return ERR_NUMBER;
         json = val;
         return 0;
     }
@@ -104,7 +133,7 @@ int ParseInteger(Json &json, const JsonTokenzier::Token& token) {
         if (19 > len) {
             memcpy(str, token.begin, len);
             jslite::Json::Integer val = strtoll(str, &pt, 10);
-            if (str+len != pt) return 1;
+            if (str+len != pt) return ERR_NUMBER;
             json  = val;
             return 0;
         }
@@ -112,7 +141,7 @@ int ParseInteger(Json &json, const JsonTokenzier::Token& token) {
         if (20 > len) {
             memcpy(str, token.begin, len);
             jslite::Json::UInteger val = strtoull(str, &pt, 10);
-            if (str+len != pt) return 1;
+            if (str+len != pt) return ERR_NUMBER;
             json = val;
             return 0;
         }
@@ -154,7 +183,7 @@ void JsonStream::FormattingComma() {
     for (uint32_t i = indent_; i; --i) ss_ << indent_sep_;
 }
 
-int JsonStream::Print(const Json& json) {
+int32_t JsonStream::Print(const Json& json) {
     PrintValue(json);
     return 0;
 }
@@ -172,7 +201,7 @@ void JsonStream::set_colon_sep(const std::string& sep) { colon_sep_ = sep; }
 int32_t JsonStream::Parse(Json& json) {
     std::string str(ss_.str());
     tokenizer_ = new JsonTokenzier(str.c_str(), str.c_str() + str.size());
-    if (NULL == tokenizer_) return -1;
+    if (NULL == tokenizer_) return ERR_NO_MEMORY;
 
     return ParseValue(json);
 }
@@ -194,6 +223,13 @@ JsonStream& JsonStream::operator << (const const std::string& s) {
     return *this;
 }
 
+std::string JsonStream::strerror(int32_t err) {
+	std::ostringstream oss;
+	oss << jslite_strerror(err) << std::endl;
+	if (tokenizer_) oss << tokenizer_->str();
+	return  oss.str();
+}
+
 int32_t JsonStream::PrintValue(const Json& json) {
     int32_t ret = 0;
     if (json.IsNull()) {
@@ -213,7 +249,7 @@ int32_t JsonStream::PrintValue(const Json& json) {
     } else if (json.IsBoolean()) {        
         ss_ << (json.boolean()?"true":"false");
     } else {
-        return -1;
+        return ERR_JSON_TYPE;
     }
 
     return ret;
@@ -231,7 +267,7 @@ int32_t JsonStream::PrintObject(const Json& json) {
             FormattingComma();
         }
         ss_ << "\"" << it->first << "\":" << colon_sep_;
-        if (0 > (ret = PrintValue(it->second))) return ret;
+        if (0 != (ret = PrintValue(it->second))) return ret;
     }
     FormattingEnd(obj_sep_);
     ss_ << "}";
@@ -248,7 +284,7 @@ int32_t JsonStream::PrintArray(const Json& json) {
             ss_ << ",";
             FormattingComma();
         }
-        if (0 > (ret = PrintValue(json[i]))) return ret;
+        if (0 != (ret = PrintValue(json[i]))) return ret;
     }
     FormattingEnd(array_sep_);
     ss_ << "]";
@@ -276,7 +312,7 @@ int32_t JsonStream::PrintString(const Json& json) {
                 if (0x1F < *it) {
                     ss_ << *it;
                 } else { //TODO error
-                    return -1;
+                    return ERR_UTF8;
                 }
                 break;
             }
@@ -312,8 +348,8 @@ DEF_OPT(array_sep)
 DEF_OPT(indent_sep)
 DEF_OPT(comma_sep)
 
-int JsonStream::ParseValue(Json &json, size_t depth) {
-    if (depth > MAX_STACK_DEPTH) return -99;
+int32_t JsonStream::ParseValue(Json &json, size_t depth) {
+    if (depth > MAX_STACK_DEPTH) return ERR_OVERFLOW;
 
     int32_t ret = 0;
 
@@ -344,14 +380,14 @@ int JsonStream::ParseValue(Json &json, size_t depth) {
     case JsonTokenzier::TK_NULL:
         break;
     default:
-        return -2;
+        return ERR_VALUE;
     }
 
     return ret;
 }
 
-int JsonStream::ParseArray(Json &json, size_t depth) {
-    if (depth > MAX_STACK_DEPTH) return -99;
+int32_t JsonStream::ParseArray(Json &json, size_t depth) {
+    if (depth > MAX_STACK_DEPTH) return ERR_OVERFLOW;
 
     json.array();
 
@@ -369,17 +405,17 @@ int JsonStream::ParseArray(Json &json, size_t depth) {
         Json value;
         json.put(value);
         ret = ParseValue(json[json.size()-1], depth+1);
-        if (0 > ret) return ret;
+        if (0 != ret) return ret;
         token = tokenizer_->SkipCommentAndNextToken();
     } while(JsonTokenzier::TK_COMMA == token.type);
 
-    if (JsonTokenzier::TK_ARR_END != tokenizer_->CurrentToken().type) return -5;
+    if (JsonTokenzier::TK_ARR_END != tokenizer_->CurrentToken().type) return ERR_ARRAY_END;
 
     return 0;
 }
     
-int JsonStream::ParseObject(Json &json, size_t depth) {
-    if (depth > MAX_STACK_DEPTH) return -99;
+int32_t JsonStream::ParseObject(Json &json, size_t depth) {
+    if (depth > MAX_STACK_DEPTH) return ERR_OVERFLOW;
 
     json.object();
 
@@ -388,27 +424,27 @@ int JsonStream::ParseObject(Json &json, size_t depth) {
     int32_t ret = 0;
 
     while(JsonTokenzier::TK_OBJ_END != (token = tokenizer_->SkipCommentAndNextToken()).type) {
-        if (JsonTokenzier::TK_STRING != token.type) return -2;
+        if (JsonTokenzier::TK_STRING != token.type) return ERR_OBJECT_KEY;
         ret = jslite::ParseString(token, key);
-        if (0 > ret) return -3;
+        if (0 != ret) return ret;
 
         token = tokenizer_->SkipCommentAndNextToken();
-        if (JsonTokenzier::TK_COLON != token.type) return -4;
+        if (JsonTokenzier::TK_COLON != token.type) return ERR_OBJECT_SEP;
 
         ret = ParseValue(json[key], depth+1); 
-        if (0 > ret) return ret;
+        if (0 != ret) return ret;
 
         token = tokenizer_->SkipCommentAndNextToken();
         if (JsonTokenzier::TK_COMMA != token.type) break;
     }
 
-    if (JsonTokenzier::TK_OBJ_END != token.type) return -5;
+    if (JsonTokenzier::TK_OBJ_END != token.type) return ERR_OBJECT_END;
 
     return 0;
 }
 
 JsonStream& operator << (JsonStream& jstm, const Json& json) {
-    int ret = jstm.Print(json);
+    int32_t ret = jstm.Print(json);
     return jstm;
 }
 
@@ -424,13 +460,13 @@ JsonStream& operator << (JsonStream& jstm, const JOpt& opt) {
 
 std::ostream& operator << (std::ostream& os, const Json& json) {
     JsonStream jstm;
-    int ret = jstm.Print(json);
+    int32_t ret = jstm.Print(json);
     os << jstm.str();
     return os;
 }
 
 JsonStream& operator >> (JsonStream& jstm, Json& json) {
-    int ret = jstm.Parse(json);
+    int32_t ret = jstm.Parse(json);
     return jstm;
 }
 

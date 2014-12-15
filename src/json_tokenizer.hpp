@@ -70,7 +70,7 @@ public:
         case '6': case '7': case '8': case '9': case '-': case '+':
             token_.type = TK_INTEGER;
 
-            do {
+            for (c = Current(); c; c = Next()) {
                 if (isdigit(c)) continue;
                 if ('+' == c || '-' == c) continue;
                 if ('.' == c || 'e' == c || 'E' == c) {
@@ -78,7 +78,7 @@ public:
                     continue;
                 }
                 break;
-            } while (c = Bump());
+            }
             break;
         case '/':
             c = Bump();

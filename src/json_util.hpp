@@ -29,7 +29,6 @@ static const unsigned char MASK_4BYTES = 0xF0; //11110000
 static const unsigned char MASK_5BYTES = 0xF8; //11111000
 static const unsigned char MASK_6BYTES = 0xFC; //11111100
 
-
 class FormatStream {
 public:
     FormatStream() {}
