@@ -1,6 +1,8 @@
 #ifndef __JS_JSON_TOKENIZER_HPP_20130410__
 #define __JS_JSON_TOKENIZER_HPP_20130410__
 
+#include <string>
+
 namespace jslite {
 
 class JsonTokenzier {
@@ -21,8 +23,8 @@ public:
 
     JsonTokenzier(const char *begin, const char *end);
 
-    char Current();
-    char Next();
+	char Current();
+	char Next();
     char Bump();
     bool IsDone();
     const Token& CurrentToken();
@@ -32,7 +34,7 @@ public:
     std::string str();
 
 protected:
-    bool Expact(const char *str, ptrdiff_t len);
+	bool Expact(const char *str, ptrdiff_t len);
 
 private:
     const char *begin_;

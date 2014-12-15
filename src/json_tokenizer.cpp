@@ -1,6 +1,33 @@
 #include "json_tokenizer.hpp"
+#include "json_util.hpp"
+
+#include <sstream>
 
 namespace jslite {
+
+static const char* type_name(JsonTokenzier::TokenType type) {
+	switch(type) {
+	case JsonTokenzier::TK_NONE:        return "NONE";
+	case JsonTokenzier::TK_WRONG:       return "WRONG";
+	case JsonTokenzier::TK_STRING:      return "STRING";
+	case JsonTokenzier::TK_INTEGER:     return "INTEGER";
+	case JsonTokenzier::TK_REAL:        return "REAL";
+	case JsonTokenzier::TK_TRUE:        return "TRUE";
+	case JsonTokenzier::TK_FALSE:       return "FALSE";
+	case JsonTokenzier::TK_NULL:        return "NULL";
+	case JsonTokenzier::TK_COLON:       return "COLON";
+	case JsonTokenzier::TK_COMMA:       return "COMMA";
+	case JsonTokenzier::TK_OBJ_BEGIN:   return "OBJECT BEGIN";
+	case JsonTokenzier::TK_OBJ_END:     return "OBJECT END";
+	case JsonTokenzier::TK_ARR_BEGIN:   return "ARRAY BEGIN";
+	case JsonTokenzier::TK_ARR_END:     return "ARRAY END";
+	case JsonTokenzier::TK_COMMENT_C:   return "COMMENT C STYLE";
+	case JsonTokenzier::TK_COMMENT_CPP: return "COMMENT CPP STYLE";
+	case JsonTokenzier::TK_EOF:         return "EOF";
+	}
+
+	return "Unknown";
+}
 
 
 JsonTokenzier::JsonTokenzier(const char *begin, const char *end) : begin_(begin), end_(end), it_(begin) {}
@@ -21,18 +48,18 @@ bool JsonTokenzier::IsDone() {
 	return it_ == end_;
 }
 
-const Token& JsonTokenzier::CurrentToken() {
+const JsonTokenzier::Token& JsonTokenzier::CurrentToken() {
 	return token_;
 }
 
-const Token& JsonTokenzier::SkipCommentAndNextToken() {
+const JsonTokenzier::Token& JsonTokenzier::SkipCommentAndNextToken() {
     do {
         NextToken();
     } while(JsonTokenzier::TK_COMMENT_CPP == token_.type || JsonTokenzier::TK_COMMENT_C == token_.type);
     return token_;
 }
 
-const Token& JsonTokenzier::NextToken() {
+const JsonTokenzier::Token& JsonTokenzier::NextToken() {
     SkipSpace();
     token_.clear();
     token_.begin = it_;
@@ -108,27 +135,32 @@ void JsonTokenzier::SkipSpace() {
 
 std::string JsonTokenzier::str() {
     size_t line_num = 0, col_num = 0;
-    {
-        const char *line = begin_;
-        for (const char *it = begin_; it != token_.begin; ++it) {
-            if ('\n' == *it) {
-                ++line_num;
-                line = it+1;
-            }
+    const char *line = begin_;
+    for (const char *it = begin_; it != token_.begin; ++it) {
+        if ('\n' == *it) {
+            ++line_num;
+            line = it+1;
         }
-        col_num = token_.begin - line;
     }
+    col_num = token_.begin - line;
 
-    std::ostringstream oss;
-    if (token_.type == TK_WRONG) {
-        oss << "Wrong keyword: " << std::string(token_.begin, token_.end - token_.begin) << " is undefined";
-    } else {
-        oss << "Keyword: " << std::string(token_.begin, token_.end - token_.begin);
-    }
+	std::string token;
+	size_t len = token_.end - token_.begin;
+	if (0 == len) {
+		token = *token_.begin;
+	} else if (32 > len) {
+		token.assign(token_.begin, len);
+	} else {
+		token.assign(token_.begin, 29);
+		token += "...";
+	}
 
-    oss << " at Line: " << line_num << ", Column: " << col_num;
+	FormatStream stm;
+	stm << "%%: \"%%\" at Line: %%, Column: %%"
+		<< (TK_WRONG == token_.type ? "Undefined" : type_name(token_.type))
+		<< token << line_num << col_num;
 
-    return oss.str();
+    return stm.str();
 }
 
 
@@ -139,7 +171,4 @@ bool JsonTokenzier::Expact(const char *str, ptrdiff_t len) {
     return true;
 }
 
-
 } // namespace jslite
-
-#endif //__JS_JSON_TOKENIZER_HPP_20130410__

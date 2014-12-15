@@ -218,7 +218,7 @@ JsonStream& JsonStream::operator << (const char *s) {
     return  *this;
 }
 
-JsonStream& JsonStream::operator << (const const std::string& s) {
+JsonStream& JsonStream::operator << (const std::string& s) {
     ss_ << s;
     return *this;
 }
