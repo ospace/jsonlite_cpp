@@ -13,8 +13,7 @@ typedef enum {
 	ERR_NO_MEMORY, //error
 	ERR_QUOTES, //double quotes are needed for string
 	ERR_ESC_CHAR, // unknown a escape character of string
-	ERR_UNICODE_CHAR, // wrong unicode string
-	ERR_UNICODE_LEN, // too short a unicode string
+	ERR_UNICODE, // wrong unicode string
 	ERR_JSON_TYPE, // not supported a type of json data
 	ERR_UTF8, // wrong utf8 string
 	ERR_VALUE, // invalid json value
@@ -73,14 +72,16 @@ protected:
 
 private:
     JsonTokenzier *tokenizer_;
-    std::stringstream ss_;
-
+    
+	uint32_t    indent_;
     std::string obj_sep_;
     std::string array_sep_;
     std::string indent_sep_;
     std::string comma_sep_;
     std::string colon_sep_;
-    uint32_t    indent_;
+
+    std::string str_;
+	std::ostringstream oss_;
 };
 
 struct JOpt {

@@ -223,6 +223,7 @@ int test_simple_comment() {
     return 0;
 }
 
+
 int test_json_parser(int argc, char* argv[]) {
     EXPECT_EQ(0, test_empty_array());
     EXPECT_EQ(0, test_empty_object());

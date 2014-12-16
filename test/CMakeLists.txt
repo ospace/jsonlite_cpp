@@ -12,6 +12,7 @@ SET(TEST_SOURCES
 	test_json_assign_fail.cpp
 	test_json_assign_value.cpp
 	test_json_parser.cpp
+	test_json_parse_error.cpp
 	#test_book_json.cpp
 )
 

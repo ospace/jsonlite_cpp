@@ -29,73 +29,44 @@ static const unsigned char MASK_4BYTES = 0xF0; //11110000
 static const unsigned char MASK_5BYTES = 0xF8; //11111000
 static const unsigned char MASK_6BYTES = 0xFC; //11111100
 
-class FormatStream {
+class FormatString {
 public:
-    FormatStream() {}
-    ~FormatStream() {}
+	FormatString() : idx_(0) {}
 
-    template<typename P>
-    FormatStream& operator << (P val) {
-        push_back(val);
-        return *this;
-    }
+	template<typename P>
+	FormatString& operator << (const P& val) {
+		if (fmt_.empty()) {
+			fmt_ = val;
+		} else {
+			std::ostringstream oss;
+			oss << val;
+			replace(oss.str());
+		}
 
-    template<>
-    FormatStream& operator << <const std::string&> (const std::string &val) {
-        push_string(val);
-        return *this;
-    }
+		return *this;
+	}
 
-    template<>
-    FormatStream& operator << <const char*> (const char* val) {
-        push_string(val);
-        return *this;
-    }
+	void clear() {
+		fmt_.clear();
+		idx_ = 0;
+	}
 
-    std::string str() {
-        if (it_ != fmt_.end()) {
-            oss_ << std::string(it_, fmt_.end());
-            it_ = fmt_.end();
-        }
-        return oss_.str();
-    }
-
-    void clear() {
-        fmt_.clear();
-        oss_.str("");
-    }
+	const std::string& str() const { return fmt_; }
 
 protected:
-    template<typename P>
-    void push_back(P val) { if (next_pos()) oss_ << val;    }
-
-    void push_string (const std::string& val) {
-        if (fmt_.empty()) {
-            fmt_ = val;
-            it_ = fmt_.begin();
-        } else {
-            push_back(val);
-        }
-    }
-
-    bool next_pos() {
-        for(;it_ != fmt_.end(); ++it_) {
-            if ('%' == *it_ && '%' == *(it_+1)) {
-                it_ += 2;
-                return true;
-            }
-
-            if ('\\' == *it_) ++it_;
-            if (it_ == fmt_.end()) break;
-            oss_ << *it_;
-        }
-        return false;
-    }
+	void replace(const std::string& str) {
+		std::ostringstream oss;
+		oss << "$" << idx_++;
+		std::string src(oss.str());
+		for (size_t p = fmt_.find(src); std::string::npos != p; p = fmt_.find(src, p)) {
+			fmt_.replace(p, src.size(), str);
+			p += str.size();
+		}
+	}
 
 private:
-    std::string::iterator it_;
-    std::ostringstream oss_;
-    std::string        fmt_;
+	std::string fmt_;
+	int         idx_;
 };
 
 inline

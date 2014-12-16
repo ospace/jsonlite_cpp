@@ -15,8 +15,7 @@ static const char* jslite_strerror(int32_t err) {
 		{SUCCESS, "Success"},
 		{ERR_QUOTES, "Double quotes are needed for string"},
 		{ERR_ESC_CHAR, "Invalid a escape character of string"},
-		{ERR_UNICODE_CHAR, "Invalid unicode string"},
-		{ERR_UNICODE_LEN, "Less unicode string"},
+		{ERR_UNICODE, "Invalid unicode string"},
 		{ERR_JSON_TYPE, "Not supported a json type"},
 		{ERR_UTF8, "Invalid utf8 string"},
 		{ERR_VALUE, "Invalid json value"},
@@ -56,8 +55,8 @@ int32_t ParseString(const JsonTokenzier::Token& token, std::string& str) {
             case 't': str += '\t'; break;
             case 'u': //u: 2chars(json only), U:4chars
                 ++it;
-                if (std::distance(it, token.end) < 4) return ERR_UNICODE_LEN;
-                if (!(isxdigit(*it) && isxdigit(*(it+1)) && isxdigit(*(it+2)) && isxdigit(*(it+3)))) return ERR_UNICODE_CHAR;
+                if (std::distance(it, token.end) < 4) return ERR_UNICODE;
+                if (!(isxdigit(*it) && isxdigit(*(it+1)) && isxdigit(*(it+2)) && isxdigit(*(it+3)))) return ERR_UNICODE;
                 str += UnicodeToUTF8(asc2hex(*it, *(it+1)), asc2hex(*(it+2), *(it+3)));
                 it += 3;
                 break;
@@ -159,7 +158,7 @@ JsonStream::JsonStream() : indent_(0), tokenizer_(NULL) { }
 JsonStream::~JsonStream() { }
 
 void JsonStream::FormattingBegin(const std::string& sep) {
-    ss_ << sep;
+    oss_ << sep;
     if (std::string::npos  != sep.find_first_of('\n')) {
         ++indent_;
         FormattingIndent();
@@ -167,7 +166,7 @@ void JsonStream::FormattingBegin(const std::string& sep) {
 }
 
 void JsonStream::FormattingEnd(const std::string& sep) {
-    ss_ << sep;
+    oss_ << sep;
     if (std::string::npos != sep.find_first_of('\n')) {
         if (indent_) --indent_;
         FormattingIndent();
@@ -175,17 +174,16 @@ void JsonStream::FormattingEnd(const std::string& sep) {
 }
 
 void JsonStream::FormattingIndent() {
-    for (uint32_t i = indent_; i; --i) ss_ << indent_sep_;
+    for (uint32_t i = indent_; i; --i) oss_ << indent_sep_;
 }
 
 void JsonStream::FormattingComma() {
-    ss_ << comma_sep_;
-    for (uint32_t i = indent_; i; --i) ss_ << indent_sep_;
+    oss_ << comma_sep_;
+    for (uint32_t i = indent_; i; --i) oss_ << indent_sep_;
 }
 
 int32_t JsonStream::Print(const Json& json) {
-    PrintValue(json);
-    return 0;
+    return PrintValue(json);
 }
 
 void JsonStream::set_obj_sep(const std::string& sep) { obj_sep_ = sep; }
@@ -199,8 +197,8 @@ void JsonStream::set_comma_sep(const std::string& sep) { comma_sep_ = sep; }
 void JsonStream::set_colon_sep(const std::string& sep) { colon_sep_ = sep; }
 
 int32_t JsonStream::Parse(Json& json) {
-    std::string str(ss_.str());
-    tokenizer_ = new JsonTokenzier(str.c_str(), str.c_str() + str.size());
+    str_ = oss_.str();
+    tokenizer_ = new JsonTokenzier(str_.c_str(), str_.c_str() + str_.size());
     if (NULL == tokenizer_) return ERR_NO_MEMORY;
 
     return ParseValue(json);
@@ -209,17 +207,22 @@ int32_t JsonStream::Parse(Json& json) {
 ////////////////////////////////////////////////////////////////////////////////////
 //protected methods
 
-std::string JsonStream::str() const { return ss_.str(); }
+std::string JsonStream::str() const {
+	return oss_.str();
+}
 
-void JsonStream::str(const std::string& s) { ss_.str(s); }
+void JsonStream::str(const std::string& s) {
+	str_.clear();
+	oss_.str(s);
+}
 
 JsonStream& JsonStream::operator << (const char *s) {
-    ss_ << s;
+    oss_ << s;
     return  *this;
 }
 
 JsonStream& JsonStream::operator << (const std::string& s) {
-    ss_ << s;
+    oss_ << s;
     return *this;
 }
 
@@ -233,21 +236,21 @@ std::string JsonStream::strerror(int32_t err) {
 int32_t JsonStream::PrintValue(const Json& json) {
     int32_t ret = 0;
     if (json.IsNull()) {
-        ss_ << "null";
+        oss_ << "null";
     } else if (json.IsString()) {
         ret = PrintString(json);
     } else if (json.IsInteger()) {
-        ss_ << json.integer();
+        oss_ << json.integer();
     } else if (json.IsUInteger()) {
-        ss_ << json.uinteger();
+        oss_ << json.uinteger();
     } else if (json.IsReal()) {
-        ss_ << json.real();
+        oss_ << json.real();
     } else if (json.IsObject()) {
         ret = PrintObject(json);
     } else if (json.IsArray()) {        
         ret = PrintArray(json);
     } else if (json.IsBoolean()) {        
-        ss_ << (json.boolean()?"true":"false");
+        oss_ << (json.boolean()?"true":"false");
     } else {
         return ERR_JSON_TYPE;
     }
@@ -258,36 +261,36 @@ int32_t JsonStream::PrintValue(const Json& json) {
 int32_t JsonStream::PrintObject(const Json& json) {
     Json::Object::iterator begin(json.object().begin());
     Json::Object::iterator end(json.object().end());
-    ss_ << "{";
+    oss_ << "{";
     FormattingBegin(obj_sep_);
     int32_t ret = 0;
     for(Json::Object::iterator it(begin);it != end; ++it) {
         if (it != begin) {
-            ss_ << ",";
+            oss_ << ",";
             FormattingComma();
         }
-        ss_ << "\"" << it->first << "\":" << colon_sep_;
+        oss_ << "\"" << it->first << "\":" << colon_sep_;
         if (0 != (ret = PrintValue(it->second))) return ret;
     }
     FormattingEnd(obj_sep_);
-    ss_ << "}";
+    oss_ << "}";
 
     return 0;
 }
 
 int32_t JsonStream::PrintArray(const Json& json) {
-    ss_ << "[";
+    oss_ << "[";
     FormattingBegin(array_sep_);
     int32_t ret = 0;
     for(size_t i=0; i < json.size(); ++i) {
         if (i != 0) {
-            ss_ << ",";
+            oss_ << ",";
             FormattingComma();
         }
         if (0 != (ret = PrintValue(json[i]))) return ret;
     }
     FormattingEnd(array_sep_);
-    ss_ << "]";
+    oss_ << "]";
 
     return 0;
 }
@@ -296,32 +299,32 @@ int32_t JsonStream::PrintString(const Json& json) {
     Json::String::const_iterator it(json.string().begin());
     Json::String::const_iterator end(json.string().end());
 
-    ss_ << "\"";
+    oss_ << "\"";
 
     for(;it != end; ++it) {
         if (!(0x80 & *it)) { //0xxxxxxx
             switch(*it) {
-            case '"': ss_ << "\\\""; break;
-            case '\\': ss_ << "\\\\"; break;
-            case '\b': ss_ << "\\b"; break;
-            case '\f': ss_ << "\\f"; break;
-            case '\n': ss_ << "\\n"; break;
-            case '\r': ss_ << "\\r"; break;
-            case '\t': ss_ << "\\t"; break;
+            case '"': oss_ << "\\\""; break;
+            case '\\': oss_ << "\\\\"; break;
+            case '\b': oss_ << "\\b"; break;
+            case '\f': oss_ << "\\f"; break;
+            case '\n': oss_ << "\\n"; break;
+            case '\r': oss_ << "\\r"; break;
+            case '\t': oss_ << "\\t"; break;
             default:
                 if (0x1F < *it) {
-                    ss_ << *it;
+                    oss_ << *it;
                 } else { //TODO error
                     return ERR_UTF8;
                 }
                 break;
             }
         } else {
-            ss_ << *it;
+            oss_ << *it;
         }
     }
 
-    ss_ << "\"";
+    oss_ << "\"";
 
     return 0;
 }

@@ -155,14 +155,13 @@ std::string JsonTokenzier::str() {
 		token += "...";
 	}
 
-	FormatStream stm;
-	stm << "%%: \"%%\" at Line: %%, Column: %%"
-		<< (TK_WRONG == token_.type ? "Undefined" : type_name(token_.type))
-		<< token << line_num << col_num;
+	FormatString fstr;
+	fstr << "$0: \"$1\" at Line: $2, Column: $3"
+		 << (TK_WRONG == token_.type ? "Undefined" : type_name(token_.type))
+		 << token << line_num << col_num;
 
-    return stm.str();
+    return fstr.str();
 }
-
 
 bool JsonTokenzier::Expact(const char *str, ptrdiff_t len) {
     if (end_ - it_ < len) return false;
