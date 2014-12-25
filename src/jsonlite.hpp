@@ -52,6 +52,10 @@ public:
     typedef std::map<std::string, Json> Object;
     typedef std::deque<Json>            Array;
 
+	typedef enum {
+		TYPE_NONE, TYPE_NULL, TYPE_STR, TYPE_INT, TYPE_UINT, TYPE_REAL, TYPE_BOOL, TYPE_OBJ, TYPE_ARR
+	} Type_T;
+
     Json();
     Json(const Json& val);
     Json(const char* val);
@@ -64,6 +68,8 @@ public:
     ~Json();
 
     Json& Swap(Json& other);
+
+	Type_T Type() const;
 
     bool IsNull() const;
     bool IsString() const;

@@ -4,6 +4,28 @@
 
 namespace jslite {
 
+struct TypeInfoComp {
+	bool operator() (std::type_info const *l, std::type_info const *r) {
+		return l->before(*r);
+	}
+};
+
+static Json::Type_T TypeOf(std::type_info const* type) {
+	static std::map<std::type_info const*, Json::Type_T, TypeInfoComp> types;
+	if (types.empty()) {
+		types[&typeid(Json::String)] = Json::TYPE_STR;
+		types[&typeid(Json::Integer)] = Json::TYPE_INT;
+		types[&typeid(Json::UInteger)] = Json::TYPE_UINT;
+		types[&typeid(Json::Real)] = Json::TYPE_REAL;
+		types[&typeid(Json::Boolean)] = Json::TYPE_BOOL;
+		types[&typeid(Json::Object)] = Json::TYPE_OBJ;
+		types[&typeid(Json::Array)] = Json::TYPE_ARR;
+	}
+
+	std::map<std::type_info const*, Json::Type_T, TypeInfoComp>::iterator it(types.find(type));
+	return ((types.end() == it)? Json::TYPE_NONE : it->second);
+}
+
 Json::Json() : value_(NULL) {}
 
 Json::Json(const char* val) : value_(new Any<String>(val)) {}
@@ -23,6 +45,11 @@ Json::Json(const Json& val) : value_(val.value_?val.value_->clone():NULL) { }
 Json::~Json() { clear(); }
 
 Json& Json::Swap(Json& other) { std::swap(value_, other.value_); return *this; }
+
+Json::Type_T Json::Type() const {
+	if (NULL == value_) return Json::TYPE_NULL;
+	return TypeOf(&value_->type());
+}
 
 bool Json::IsNull() const { return NULL == value_; }
 

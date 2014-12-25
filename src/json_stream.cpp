@@ -235,25 +235,18 @@ std::string JsonStream::strerror(int32_t err) {
 
 int32_t JsonStream::PrintValue(const Json& json) {
     int32_t ret = 0;
-    if (json.IsNull()) {
-        oss_ << "null";
-    } else if (json.IsString()) {
-        ret = PrintString(json);
-    } else if (json.IsInteger()) {
-        oss_ << json.integer();
-    } else if (json.IsUInteger()) {
-        oss_ << json.uinteger();
-    } else if (json.IsReal()) {
-        oss_ << json.real();
-    } else if (json.IsObject()) {
-        ret = PrintObject(json);
-    } else if (json.IsArray()) {        
-        ret = PrintArray(json);
-    } else if (json.IsBoolean()) {        
-        oss_ << (json.boolean()?"true":"false");
-    } else {
-        return ERR_JSON_TYPE;
-    }
+
+	switch(json.Type()) {
+	case Json::TYPE_NULL: oss_ << "null"; break;
+	case Json::TYPE_STR: ret = PrintString(json); break;
+	case Json::TYPE_INT: oss_ << json.integer(); break;
+	case Json::TYPE_UINT: oss_ << json.uinteger(); break;
+	case Json::TYPE_REAL: oss_ << json.real();  break;
+	case Json::TYPE_OBJ: ret = PrintObject(json); break;
+	case Json::TYPE_ARR: ret = PrintArray(json); break;
+	case Json::TYPE_BOOL: oss_ << (json.boolean()?"true":"false"); break;
+	default: return ERR_JSON_TYPE;
+	}
 
     return ret;
 }
